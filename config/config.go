@@ -35,10 +35,6 @@ func (c *Config) init() error {
 		panic(fmt.Errorf("Failed to read config file: %s \n", err))
 	}
 
-	fmt.Println(viper.GetString("name"))
-	fmt.Println(viper.GetString("log.level"))
-	fmt.Println(viper.AllSettings())
-
 	return nil
 }
 

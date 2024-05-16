@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -16,7 +15,6 @@ var conf = pflag.StringP("conf", "c", "", "config filepath")
 func main() {
 	pflag.Parse()
 
-	fmt.Println("config filepath:", *conf)
 	// 读取配置
 	if err := config.Run(*conf); err != nil {
 		panic(err)
@@ -29,6 +27,9 @@ func main() {
 	}
 	// 链接redis
 	db.InitRedis()
+
+	// 初始化日志
+	logger.InitLogger()
 
 	gin.SetMode(viper.GetString("mode"))
 	g := gin.New()

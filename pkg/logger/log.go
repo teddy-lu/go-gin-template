@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -13,7 +12,7 @@ import (
 
 var Logger *zap.Logger
 
-func init() {
+func InitLogger() {
 	config := zapcore.EncoderConfig{
 		MessageKey:  "msg",
 		LevelKey:    "level",
@@ -31,12 +30,8 @@ func init() {
 	encoder := zapcore.NewConsoleEncoder(config)
 	FileFormat, saveType, LogLevel := "%Y%m%d", "one", "info"
 
-	fmt.Println(222222222222222222)
-	fmt.Println(viper.AllSettings())
 	if viper.IsSet("log.level") {
-		fmt.Println(111111111111111111)
 		LogLevel = viper.GetString("log.level")
-		fmt.Println(LogLevel)
 	}
 	if viper.IsSet("log.file_format") {
 		FileFormat = viper.GetString("log.file_format")
@@ -59,8 +54,6 @@ func init() {
 		logLevel = zap.InfoLevel
 	}
 
-	fmt.Println(logLevel)
-
 	switch saveType {
 	case "level":
 		Logger = getLevelLogger(encoder, logLevel, FileFormat)
@@ -70,10 +63,9 @@ func init() {
 }
 
 func getOnceLogger(encoder zapcore.Encoder, level zapcore.Level, format string) *zap.Logger {
-	fmt.Println(3333333333333)
 	infoWriter := getLoggerWriter("./var/log/run_log", format)
 	infoLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl == zapcore.DebugLevel && lvl >= level
+		return lvl == zapcore.DebugLevel && level >= lvl
 	})
 	core := zapcore.NewTee(
 		zapcore.NewCore(encoder, zapcore.AddSync(infoWriter), infoLevel),

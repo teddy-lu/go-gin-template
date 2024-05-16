@@ -36,7 +36,6 @@ func (pool MysqlPool) InitPool() (isSuc bool) {
 		viper.GetString("db.charset"),
 	)
 
-	fmt.Println(dsn)
 	db, err = gorm.Open("mysql", dsn)
 	if err != nil {
 		panic(errors.New("init mysql pool failed"))
