@@ -1,0 +1,25 @@
+name: go-gin-demo
+mode: debug
+addr: :8080
+
+db:
+  name:
+  host: 127.0.0.1
+  port: 3306
+  username:
+  password:
+  charset: utf8mb4
+  max_idle_cons: 10
+  max_open_cons: 2
+redis:
+  host: 127.0.0.1
+  port: 6379
+  auth:
+  db: 0
+
+max_ping_count: 4
+log:
+  level: debug # 日志级别，info，debug，error
+  file_format: "%Y%m%d" # 文件格式
+  max_save_days: 30
+  file_type: one #one, level 单文件存储还是以level级别存储
