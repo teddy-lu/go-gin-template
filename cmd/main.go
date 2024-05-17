@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/viper"
 	"go-gin-demo/config"
 	"go-gin-demo/db"
-	"go-gin-demo/internal/route"
 	"go-gin-demo/pkg/logger"
+	"go-gin-demo/routers"
 )
 
 var conf = pflag.StringP("conf", "c", "", "config filepath")
@@ -33,7 +33,7 @@ func main() {
 
 	gin.SetMode(viper.GetString("mode"))
 	g := gin.New()
-	g = route.SetRouter(g)
+	g = routers.SetRouter(g)
 	// Listen and Server in 0.0.0.0:8080
 	if err := g.Run(viper.GetString("addr")); err != nil {
 		return

@@ -28,13 +28,8 @@ func Created(c *gin.Context, data interface{}) {
 	})
 }
 
-func Deleted(c *gin.Context, data interface{}) {
-	code := http.StatusNoContent
-	c.JSON(code, Response{
-		Code:    code,
-		Message: "Deleted Success",
-		Data:    data,
-	})
+func Deleted(c *gin.Context) {
+	c.String(http.StatusNoContent, "Deleted Success")
 }
 
 func Error(c *gin.Context, code int, message string, data interface{}) {

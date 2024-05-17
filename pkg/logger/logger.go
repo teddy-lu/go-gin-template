@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -64,12 +65,14 @@ func InitLogger() {
 
 func getOnceLogger(encoder zapcore.Encoder, level zapcore.Level, format string) *zap.Logger {
 	infoWriter := getLoggerWriter("./var/log/run_log", format)
+	fmt.Println(level)
 	infoLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl == zapcore.DebugLevel && level >= lvl
 	})
 	core := zapcore.NewTee(
 		zapcore.NewCore(encoder, zapcore.AddSync(infoWriter), infoLevel),
 	)
+	fmt.Println(333333333333333)
 	return zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.WarnLevel))
 }
 
