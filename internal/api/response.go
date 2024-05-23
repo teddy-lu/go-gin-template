@@ -33,7 +33,7 @@ func Deleted(c *gin.Context) {
 }
 
 func Error(c *gin.Context, code int, message string, data interface{}) {
-	c.JSON(code, Response{
+	c.AbortWithStatusJSON(code, Response{
 		Code:    code,
 		Message: message,
 		Data:    data,

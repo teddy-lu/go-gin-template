@@ -3,9 +3,9 @@ package db
 import (
 	"errors"
 	"fmt"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/spf13/viper"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"sync"
 )
 
@@ -26,7 +26,7 @@ func GetMysqlPool() *MysqlPool {
 	return instance
 }
 
-func (pool MysqlPool) InitPool() (isSuc bool) {
+func (pool MysqlPool) InitPool() (orm *gorm.DB, isSuc bool) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s",
 		viper.GetString("db.username"),
 		viper.GetString("db.password"),
@@ -35,14 +35,28 @@ func (pool MysqlPool) InitPool() (isSuc bool) {
 		viper.GetString("db.name"),
 		viper.GetString("db.charset"),
 	)
+	dbConfig := mysql.New(mysql.Config{
+		DSN: dsn,
+	})
 
-	db, err = gorm.Open("mysql", dsn)
+	db, err = gorm.Open(dbConfig)
 	if err != nil {
 		panic(errors.New("init mysql pool failed"))
-		return false
+		return nil, false
 	}
 
-	db.DB().SetMaxIdleConns(viper.GetInt("db.max_idle_cons"))
-	db.DB().SetMaxOpenConns(viper.GetInt("db.max_open_cons"))
-	return true
+	dbase, err := db.DB()
+	if err != nil {
+		panic(errors.New("get mysql DB failed"))
+		return nil, false
+	}
+
+	// 设置最大空闲连接数
+	dbase.SetMaxIdleConns(viper.GetInt("db.max_idle_cons"))
+	// 设置最大连接数
+	dbase.SetMaxOpenConns(viper.GetInt("db.max_open_cons"))
+	// 设置每个链接的过期时间
+	//dbase.SetConnMaxLifetime(time.Duration(viper.GetInt("db.conn_max_lifetime")) * time.Second)
+
+	return db, true
 }

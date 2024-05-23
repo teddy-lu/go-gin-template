@@ -62,7 +62,7 @@ air
 ```yaml
 name: go-gin-demo
 mode: debug
-addr: :8080
+addr: 8080
 
 db: # mysql数据库配置
   name:
@@ -79,7 +79,6 @@ redis: # redis配置
   auth:
   db: 0
 
-max_ping_count: 4
 log:
   level: debug # 日志级别，info，debug，error
   file_format: "%Y%m%d" # 文件格式

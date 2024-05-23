@@ -1,6 +1,6 @@
 name: go-gin-demo
 mode: debug
-addr: :8080
+addr: 8080
 
 db:
   name:

@@ -1,12 +1,48 @@
 package routers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-gin-demo/internal/api/index"
+	"go-gin-demo/internal/dao"
+	idx "go-gin-demo/internal/service/index"
+	"go-gin-demo/pkg/logger"
 	"net/http"
+	"time"
 )
 
-func SetRouter(g *gin.Engine) *gin.Engine {
+type MyServer struct {
+	demoService *idx.DemoService
+}
+
+func NewServer(demoStore dao.DemoStore) *MyServer {
+	var demoService = idx.NewDemoService(demoStore)
+	return &MyServer{demoService: demoService}
+}
+
+func MyLogger() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		// 延迟
+		latency := time.Since(start)
+
+		logger.Debug(fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+			c.ClientIP(),
+			time.Now().Format(time.RFC1123),
+			c.Request.Method,
+			c.Request.URL.Path,
+			c.Request.Proto,
+			c.Writer.Status(),
+			latency,
+			c.Request.UserAgent(),
+			c.Errors.ByType(gin.ErrorTypePrivate).String(),
+		))
+	}
+}
+
+func (svr *MyServer) SetRouter(g *gin.Engine) *gin.Engine {
+	g.Use(MyLogger())
 	g.Use(gin.Recovery())
 	// 404
 	g.NoRoute(func(c *gin.Context) {
@@ -20,7 +56,8 @@ func SetRouter(g *gin.Engine) *gin.Engine {
 		})
 	})
 
-	g.GET("/index", index.Index)
+	g.GET("/index", index.Index())
+	g.GET("/demo", index.Demo(*svr.demoService))
 
 	return g
 }
