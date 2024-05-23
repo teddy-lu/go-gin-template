@@ -1,12 +1,16 @@
 # go-gin-demo
+
 ## 项目信息
+
 ### 背景
+
 - 为了有一套适合自己开发的GO项目Demo，所以自己动手写了一个项目框架。
 - 项目旨在开箱即用，不需要重复造框架
 - 项目旨在为其他开发者提供参考，帮助开发者快速开发项目
 - 先fork为新项目，然后修改项目名，再修改项目描述，按照自己的项目修改config，最后修改项目地址，提交git，就可以开发了
 
 ### 项目结构
+
 ```text
 ├── cmd # 项目入口
 │   └── main.go
@@ -24,8 +28,8 @@
 │   │   └── model.go
 │   ├── service # 业务逻辑层
 │   │   └── service.go
-│   └── server # 服务层
-│       └── server.go
+│   └── api # 接口服务层
+│       └── index.go
 ├── pkg # 项目工具包
 │   └── logger
 │       └── logger.go # 日志模块
@@ -38,17 +42,20 @@
 ```
 
 ### 项目依赖
+
 - github.com/fsnotify/fsnotify
 - github.com/gin-gonic/gin
 - github.com/go-redis/redis
-- github.com/jinzhu/gorm
+- gorm.io/driver/mysql
 - github.com/lestrrat-go/file-rotatelogs
 - go.uber.org/zap
 - github.com/spf13/pflag
 - github.com/spf13/viper
 - github.com/cosmtrek/air
+- gorm.io/gorm
 
 ### 项目启动
+
 ```shell
 # 启动方式1
 go run cmd/main.go -c config.yaml
@@ -59,6 +66,7 @@ air
 ```
 
 ### 项目配置文件
+
 ```yaml
 name: go-gin-demo
 mode: debug

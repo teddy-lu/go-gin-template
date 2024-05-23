@@ -1,19 +1,19 @@
 package logger
 
 import (
-	"fmt"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io"
 	"log"
+	"os"
 	"time"
 )
 
 var Logger *zap.Logger
 
-func InitLogger() {
+func InitLogger() *zap.Logger {
 	config := zapcore.EncoderConfig{
 		MessageKey:  "msg",
 		LevelKey:    "level",
@@ -57,37 +57,38 @@ func InitLogger() {
 
 	switch saveType {
 	case "level":
-		Logger = getLevelLogger(encoder, logLevel, FileFormat)
+		Logger = getLevelLogger(encoder, FileFormat)
 	default:
 		Logger = getOnceLogger(encoder, logLevel, FileFormat)
 	}
+	defer Logger.Sync()
+
+	return Logger
 }
 
 func getOnceLogger(encoder zapcore.Encoder, level zapcore.Level, format string) *zap.Logger {
-	infoWriter := getLoggerWriter("./var/log/run_log", format)
-	fmt.Println(level)
-	infoLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl == zapcore.DebugLevel && level >= lvl
+	logWriter := getLoggerWriter("./var/log/run_log", format)
+	setLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+		return level <= lvl
 	})
 	core := zapcore.NewTee(
-		zapcore.NewCore(encoder, zapcore.AddSync(infoWriter), infoLevel),
+		zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(zapcore.AddSync(logWriter), os.Stdout), setLevel),
 	)
-	fmt.Println(333333333333333)
 	return zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.WarnLevel))
 }
 
-func getLevelLogger(encoder zapcore.Encoder, level zapcore.Level, format string) *zap.Logger {
+func getLevelLogger(encoder zapcore.Encoder, format string) *zap.Logger {
 	infoLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl == zapcore.InfoLevel && lvl >= level
+		return lvl == zapcore.InfoLevel
 	})
 	debugLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl == zapcore.DebugLevel && lvl >= level
+		return lvl == zapcore.DebugLevel
 	})
 	errorLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl == zapcore.ErrorLevel && lvl >= level
+		return lvl == zapcore.ErrorLevel
 	})
 	warnLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl == zapcore.WarnLevel && lvl >= level
+		return lvl == zapcore.WarnLevel
 	})
 
 	infoWriter := getLoggerWriter("./var/log/info", format)
@@ -97,21 +98,23 @@ func getLevelLogger(encoder zapcore.Encoder, level zapcore.Level, format string)
 
 	// 创建Logger实例
 	core := zapcore.NewTee(
-		zapcore.NewCore(encoder, zapcore.AddSync(debugWriter), debugLevel),
-		zapcore.NewCore(encoder, zapcore.AddSync(infoWriter), infoLevel),
-		zapcore.NewCore(encoder, zapcore.AddSync(errorWriter), errorLevel),
-		zapcore.NewCore(encoder, zapcore.AddSync(warnWriter), warnLevel),
+		zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(zapcore.AddSync(debugWriter), os.Stdout), debugLevel),
+		zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(zapcore.AddSync(infoWriter), os.Stdout), infoLevel),
+		zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(zapcore.AddSync(errorWriter), os.Stdout), errorLevel),
+		zapcore.NewCore(encoder, zapcore.NewMultiWriteSyncer(zapcore.AddSync(warnWriter), os.Stdout), warnLevel),
 	)
 	return zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.WarnLevel))
 }
 
 func getLoggerWriter(file string, format string) io.Writer {
 	// 生成rotate
+	saveDays := viper.GetInt("max_save_days")
+	duration := time.Hour * 24 * time.Duration(saveDays)
 	hook, err := rotatelogs.New(
 		file+format+".log",
 		rotatelogs.WithLinkName(file),
 		// 保存天数
-		rotatelogs.WithMaxAge(time.Hour*24*30),
+		rotatelogs.WithMaxAge(duration),
 		// 切割频率 每天
 		rotatelogs.WithRotationTime(time.Hour*24),
 	)
@@ -128,6 +131,10 @@ func Debug(format string, v ...interface{}) {
 
 func Info(format string, v ...interface{}) {
 	Logger.Sugar().Infof(format, v...)
+}
+
+func Warn(format string, v ...interface{}) {
+	Logger.Sugar().Warnf(format, v...)
 }
 
 func Error(format string, v ...interface{}) {

@@ -23,6 +23,10 @@ func main() {
 		panic(err)
 	}
 
+	// 读取环境配置mode模式
+	mode := viper.GetString("mode")
+	// 初始化日志
+	logger.InitLogger()
 	// 链接mysql
 	dbm, m := db.GetMysqlPool().InitPool()
 	if !m {
@@ -32,21 +36,17 @@ func main() {
 	// 链接redis
 	db.InitRedis()
 
-	// 初始化日志
-	logger.InitLogger()
-
 	// 实例化server参数，并启动gin
-	g := createApp(dbm)
+	g := createGinServer(dbm, mode)
 	// Listen and Server in 0.0.0.0:8080
 	if err := g.Run(fmt.Sprintf(":%s", viper.GetString("addr"))); err != nil {
 		return
 	}
 }
 
-func createApp(dbm *gorm.DB) *gin.Engine {
+func createGinServer(dbm *gorm.DB, mode string) *gin.Engine {
 	demoDao := dao.NewDemoDao(dbm)
 	serv := routers.NewServer(demoDao)
-	mode := viper.GetString("mode")
 	if mode == "debug" {
 		gin.SetMode(gin.TestMode)
 	} else {

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/spf13/viper"
+	zapLog "go-gin-demo/pkg/logger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"sync"
@@ -39,7 +40,8 @@ func (pool MysqlPool) InitPool() (orm *gorm.DB, isSuc bool) {
 		DSN: dsn,
 	})
 
-	db, err = gorm.Open(dbConfig)
+	zapLogger := zapLog.New()
+	db, err = gorm.Open(dbConfig, &gorm.Config{Logger: zapLogger})
 	if err != nil {
 		panic(errors.New("init mysql pool failed"))
 		return nil, false

@@ -27,7 +27,7 @@ func MyLogger() gin.HandlerFunc {
 		// 延迟
 		latency := time.Since(start)
 
-		logger.Debug(fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+		logger.Debug(fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"",
 			c.ClientIP(),
 			time.Now().Format(time.RFC1123),
 			c.Request.Method,
