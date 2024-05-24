@@ -2,15 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"go-gin-demo/cmd/provider"
 	"go-gin-demo/config"
-	"go-gin-demo/db"
-	"go-gin-demo/internal/dao"
 	"go-gin-demo/pkg/logger"
-	"go-gin-demo/routers"
-	"gorm.io/gorm"
+	"log"
 )
 
 var conf = pflag.StringP("conf", "c", "", "config filepath")
@@ -19,40 +16,29 @@ func main() {
 	pflag.Parse()
 
 	// 读取配置
-	if err := config.Run(*conf); err != nil {
-		panic(err)
+	c, cErr := config.Run(*conf)
+	if cErr != nil {
+		panic(cErr)
 	}
 
 	// 读取环境配置mode模式
 	mode := viper.GetString("mode")
 	// 初始化日志
 	logger.InitLogger()
-	// 链接mysql
-	dbm, m := db.GetMysqlPool().InitPool()
-	if !m {
-		logger.Error("init database pool failure...")
-		panic("mysql init failed")
-	}
-	// 链接redis
-	db.InitRedis()
+	// 初始化db类
+	dbm := provider.CreateDb(c)
 
 	// 实例化server参数，并启动gin
-	g := createGinServer(dbm, mode)
+	fmt.Println("server start...")
+	g := provider.CreateGinServer(dbm, mode)
 	// Listen and Server in 0.0.0.0:8080
-	if err := g.Run(fmt.Sprintf(":%s", viper.GetString("addr"))); err != nil {
-		return
-	}
-}
+	//if err := g.Run(fmt.Sprintf(":%d", c.Addr)); err != nil {
+	//	panic(err)
+	//	return
+	//}
 
-func createGinServer(dbm *gorm.DB, mode string) *gin.Engine {
-	demoDao := dao.NewDemoDao(dbm)
-	serv := routers.NewServer(demoDao)
-	if mode == "debug" {
-		gin.SetMode(gin.TestMode)
-	} else {
-		gin.SetMode(gin.ReleaseMode)
-	}
-	g := gin.New()
-	serv.SetRouter(g)
-	return g
+	appSrv := provider.CreateServEngine(c, g)
+	log.Printf("Server: http://127.0.0.1:%d", c.Addr)
+	//log.Fatalln()是一个日志函数，用于记录一条错误日志。如果ListenAndServe()方法返回错误，它会调用log.Fatalln()来记录这条错误日志，并导致程序立即退出
+	log.Fatalln(appSrv.Server.ListenAndServe())
 }

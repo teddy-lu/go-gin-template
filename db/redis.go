@@ -3,24 +3,20 @@ package db
 import (
 	"fmt"
 	"github.com/go-redis/redis"
-	"github.com/spf13/viper"
+	"go-gin-demo/config"
 )
 
 var RedisClient *redis.Client
 
-func InitRedis() {
+func InitRedis(cfg *config.Config) {
 	RedisClient = redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%s",
-			viper.GetString("redis.host"),
-			viper.GetString("redis.port"),
-		),
-		Password: viper.GetString("redis.auth"), // no password set
-		DB:       viper.GetInt("redis.db"),      // use default DB
+		Addr:     fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port),
+		Password: cfg.Redis.Auth, // no password set
+		DB:       cfg.Redis.Db,   // use default DB
 	})
 
 	_, err := RedisClient.Ping().Result()
 	if err != nil {
 		panic("redis connect error")
 	}
-
 }

@@ -55,5 +55,5 @@ func (l *DbLog) Trace(_ context.Context, begin time.Time, fc func() (sql string,
 	fmt.Println(l.LogLevel)
 	elapsed := time.Since(begin)
 	sql, rows := fc()
-	Warn(fmt.Sprintf("Trace sql [Duration: %s]: %v  row： %v  err: %v", elapsed, sql, rows, err))
+	Debug(fmt.Sprintf("Trace sql [Duration: %s]: %v  row： %v  err: %v", elapsed, sql, rows, err))
 }

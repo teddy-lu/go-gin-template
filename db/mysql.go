@@ -3,7 +3,7 @@ package db
 import (
 	"errors"
 	"fmt"
-	"github.com/spf13/viper"
+	"go-gin-demo/config"
 	zapLog "go-gin-demo/pkg/logger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -27,21 +27,24 @@ func GetMysqlPool() *MysqlPool {
 	return instance
 }
 
-func (pool MysqlPool) InitPool() (orm *gorm.DB, isSuc bool) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s",
-		viper.GetString("db.username"),
-		viper.GetString("db.password"),
-		viper.GetString("db.host"),
-		viper.GetString("db.port"),
-		viper.GetString("db.name"),
-		viper.GetString("db.charset"),
+func (pool MysqlPool) InitPool(cfg *config.Config) (orm *gorm.DB, isSuc bool) {
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s",
+		cfg.Db.Username,
+		cfg.Db.Password,
+		cfg.Db.Host,
+		cfg.Db.Port,
+		cfg.Db.Name,
+		cfg.Db.Charset,
 	)
 	dbConfig := mysql.New(mysql.Config{
 		DSN: dsn,
 	})
 
 	zapLogger := zapLog.New()
-	db, err = gorm.Open(dbConfig, &gorm.Config{Logger: zapLogger})
+	db, err = gorm.Open(dbConfig, &gorm.Config{
+		Logger:                                   zapLogger,
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	if err != nil {
 		panic(errors.New("init mysql pool failed"))
 		return nil, false
@@ -54,9 +57,9 @@ func (pool MysqlPool) InitPool() (orm *gorm.DB, isSuc bool) {
 	}
 
 	// 设置最大空闲连接数
-	dbase.SetMaxIdleConns(viper.GetInt("db.max_idle_cons"))
+	dbase.SetMaxIdleConns(cfg.Db.MaxIdleCons)
 	// 设置最大连接数
-	dbase.SetMaxOpenConns(viper.GetInt("db.max_open_cons"))
+	dbase.SetMaxOpenConns(cfg.Db.MaxOpenCons)
 	// 设置每个链接的过期时间
 	//dbase.SetConnMaxLifetime(time.Duration(viper.GetInt("db.conn_max_lifetime")) * time.Second)
 
