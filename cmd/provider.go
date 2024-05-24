@@ -1,4 +1,4 @@
-package provider
+package main
 
 import (
 	"fmt"
@@ -14,16 +14,16 @@ import (
 	"time"
 )
 
-type App struct {
-	Conf   *config.Config
-	Server *http.Server
+type app struct {
+	config *config.Config
+	server *http.Server
 }
 
-func newApp(config *config.Config, server *http.Server) *App {
-	return &App{Conf: config, Server: server}
+func newApp(config *config.Config, server *http.Server) *app {
+	return &app{config: config, server: server}
 }
 
-func CreateServEngine(cfg *config.Config, g *gin.Engine) *App {
+func createServEngine(cfg *config.Config, g *gin.Engine) *app {
 	mainApp := newApp(cfg, &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Addr),
 		Handler:      g,
@@ -33,14 +33,14 @@ func CreateServEngine(cfg *config.Config, g *gin.Engine) *App {
 	return mainApp
 }
 
-func CreateDb(cfg *config.Config) *gorm.DB {
+func createDb(cfg *config.Config) *gorm.DB {
 	// 链接mysql
 	dbm, m := db.GetMysqlPool().InitPool(cfg)
 	if !m {
 		logger.Error("init database pool failure...")
 		panic("mysql init failed")
 	}
-	mErr := MigratorDb(dbm)
+	mErr := migratorDb(dbm)
 	if mErr != nil {
 		logger.Error("migrator database failure...")
 		panic("mysql database migrator failed")
@@ -51,12 +51,12 @@ func CreateDb(cfg *config.Config) *gorm.DB {
 	return dbm
 }
 
-func MigratorDb(dbm *gorm.DB) error {
+func migratorDb(dbm *gorm.DB) error {
 	fmt.Println("migrator database...")
 	return dbm.AutoMigrate(&models.Demo{})
 }
 
-func CreateGinServer(dbm *gorm.DB, mode string) *gin.Engine {
+func createGinServer(dbm *gorm.DB, mode string) *gin.Engine {
 	demoDao := dao.NewDemoDao(dbm)
 	serv := routers.NewServer(demoDao)
 	if mode == "debug" {
