@@ -41,7 +41,7 @@ func MyLogger() gin.HandlerFunc {
 	}
 }
 
-func (svr *MyServer) SetRouter(g *gin.Engine) *gin.Engine {
+func (srv *MyServer) SetRouter(g *gin.Engine) *gin.Engine {
 	g.Use(MyLogger())
 	g.Use(gin.Recovery())
 	// 404
@@ -57,7 +57,7 @@ func (svr *MyServer) SetRouter(g *gin.Engine) *gin.Engine {
 	})
 
 	g.GET("/index", index.Index())
-	g.GET("/demo", index.Demo(*svr.demoService))
+	g.GET("/demo", index.Demo(*srv.demoService))
 
 	return g
 }
