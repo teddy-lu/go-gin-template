@@ -1,14 +1,12 @@
 package routers
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-gin-demo/internal/api/index"
 	"go-gin-demo/internal/dao"
 	idx "go-gin-demo/internal/service/index"
 	"go-gin-demo/pkg/logger"
 	"net/http"
-	"time"
 )
 
 type MyServer struct {
@@ -20,29 +18,8 @@ func NewServer(demoStore dao.DemoStore) *MyServer {
 	return &MyServer{demoService: demoService}
 }
 
-func MyLogger() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		start := time.Now()
-		c.Next()
-		// 延迟
-		latency := time.Since(start)
-
-		logger.Debug(fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"",
-			c.ClientIP(),
-			time.Now().Format(time.RFC1123),
-			c.Request.Method,
-			c.Request.URL.Path,
-			c.Request.Proto,
-			c.Writer.Status(),
-			latency,
-			c.Request.UserAgent(),
-			c.Errors.ByType(gin.ErrorTypePrivate).String(),
-		))
-	}
-}
-
 func (srv *MyServer) SetRouter(g *gin.Engine) *gin.Engine {
-	g.Use(MyLogger())
+	g.Use(logger.MyLogger())
 	g.Use(gin.Recovery())
 	// 404
 	g.NoRoute(func(c *gin.Context) {
