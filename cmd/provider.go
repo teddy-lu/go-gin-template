@@ -10,6 +10,7 @@ import (
 	"go-gin-demo/pkg/logger"
 	"go-gin-demo/routers"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 	"time"
 )
@@ -27,8 +28,8 @@ func createServEngine(cfg *config.Config, g *gin.Engine) *app {
 	mainApp := newApp(cfg, &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Addr),
 		Handler:      g,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
 	})
 	return mainApp
 }
@@ -52,7 +53,7 @@ func createDb(cfg *config.Config) *gorm.DB {
 }
 
 func migratorDb(dbm *gorm.DB) error {
-	fmt.Println("migrator database...")
+	log.Println("migrator database...")
 	return dbm.AutoMigrate(&models.Demo{})
 }
 

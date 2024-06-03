@@ -16,7 +16,6 @@ func Index() gin.HandlerFunc {
 
 		api.Json(c, 200, "success", nil)
 	}
-
 }
 
 func Demo(service index.DemoService) gin.HandlerFunc {
