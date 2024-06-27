@@ -52,7 +52,6 @@ func (l *DbLog) Error(_ context.Context, msg string, data ...interface{}) {
 
 func (l *DbLog) Trace(_ context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
 	//这块的逻辑可以自己根据业务情况修改
-	fmt.Println(l.LogLevel)
 	elapsed := time.Since(begin)
 	sql, rows := fc()
 	Debug(fmt.Sprintf("Trace sql [Duration: %s]: %v  row： %v  err: %v", elapsed, sql, rows, err))
