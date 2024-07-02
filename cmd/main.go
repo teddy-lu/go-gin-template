@@ -38,6 +38,9 @@ func main() {
 
 	appSrv := createServEngine(c, g)
 	log.Printf("Server: http://127.0.0.1:%d", c.Addr)
+	for _, r := range g.Routes() {
+		fmt.Printf("path: %s, method: %s\n", r.Path, r.Method)
+	}
 	//log.Fatalln()是一个日志函数，用于记录一条错误日志。如果ListenAndServe()方法返回错误，它会调用log.Fatalln()来记录这条错误日志，并导致程序立即退出
 	log.Fatalln(appSrv.server.ListenAndServe())
 }
